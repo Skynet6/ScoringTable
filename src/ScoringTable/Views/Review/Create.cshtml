@@ -1,0 +1,12 @@
+﻿@model GameReviewer.Models.Review
+
+<h1>Add a review</h1>
+<hr/>
+
+<form asp-action="Create" asp-controller="Review" asp-route-gamename="@ViewData["gameName"]">
+    <label asp-for="Rating"></label>
+    <input asp-for="Rating"/>
+    <label asp-for="Comment"></label>
+    <input asp-for="Comment"/>
+    <input type="submit" value="Add a review to @ViewData["gameName"]"/>
+</form>

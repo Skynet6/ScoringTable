@@ -1,0 +1,113 @@
+﻿@using ScoringTable.Models.DAL.SolvedMazes
+@model List<ScoringTable.Models.Team>
+<div class="jumbotron">
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-4"></div>
+            <div style="vertical-align: middle" class="col-md-4 col-sm-4">
+                <h1>Countdown Clock</h1>
+                <div id="clockdiv">
+                    @*<div>
+                        <span class="days"></span>
+                        <div class="smalltext">Days</div>
+                    </div>*@
+                    <div>
+                        <span class="hours"></span>
+                        <div class="smalltext">Hours</div>
+                    </div>
+                    <div>
+                        <span class="minutes"></span>
+                        <div class="smalltext">Minutes</div>
+                    </div>
+                    <div>
+                        <span class="seconds"></span>
+                        <div class="smalltext">Seconds</div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4"></div>
+        </div>
+    </div>
+    <div class="container-fluid">
+        <div class="row">
+            <div class="col-md-2"></div>
+            <div class="col-md-8">
+                <h1>List of teams</h1>
+                <hr/>
+                <div>
+                    <table class="table table-responsive table-striped table-hover table-bordered" id="scoreTable">
+                        <thead class="thead-inverse">
+                        <tr>
+                            <th>Name</th>
+                            @{ int counter = 0;}
+                            @foreach (var challenge in Model.First().Mazes)
+                            {
+                                counter++;
+                                <th>Maze @counter</th>
+                            }
+                            <th>Sum</th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        @foreach (var team in Model)
+                        {
+                            <tr>
+                                <td>@team.Name</td>
+                                @foreach (var maze in team.Mazes)
+                                {
+                                    if (maze.Solved)
+                                    {
+                                        if (maze.BestTeam)
+                                        {
+                                            <td class="table-success solved">
+                                                @maze.Score
+                                            </td>
+                                        }
+                                        else if (maze.WorstTeam)
+                                        {
+                                            <td class="table-danger solved">
+                                                @maze.Score
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td class="solved">
+                                                @maze.Score
+                                            </td>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        if (maze.BestTeam)
+                                        {
+                                            <td class="table-success">
+                                                @maze.Score
+                                            </td>
+                                        }
+                                        else if (maze.WorstTeam)
+                                        {
+                                            <td class="table-danger">
+                                                @maze.Score
+                                            </td>
+                                        }
+                                        else
+                                        {
+                                            <td>
+                                                @maze.Score
+                                            </td>
+                                        }
+                                    }
+                                }
+
+                                <td>@team.Sum</td>
+                            </tr>
+                        }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div class="col-md-2"></div>
+            <span id="timeLeft" class="hidden timeLeft" hidden="">@ViewData["timeLeft"]</span>
+        </div>
+    </div>
+</div>
