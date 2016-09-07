@@ -12,10 +12,11 @@ namespace ScoringTable.Controllers
         public IActionResult Index()
         {
             var scoringService = new ScoringService();
-            var model = scoringService.GetAllTeams(); //PrepareTestData();
+            //var model = scoringService.GetAllTeams();
+            var model = PrepareTestData();
 
-            var timeLeft = scoringService.GetTimeLeft("timer_1");
-            var numberOfChalenges = model.FirstOrDefault().Mazes.Count;
+            //var timeLeft = scoringService.GetTimeLeft("timer_1");
+            var timeLeft = 100;
             //List<Maze> bestScores, worstScores;
 
             //CalculateEdgeScores(model, numberOfChalenges, out bestScores, out worstScores);
@@ -26,14 +27,14 @@ namespace ScoringTable.Controllers
             return View(model);
         }
 
-        //private static List<Team> PrepareTestData()
-        //{
-        //    return new List<Team>
-        //    {
-        //        new Team {Mazes = new List<int> {1, 3, 0, 4}, Name = "Cool Team", Id = "1"},
-        //        new Team {Mazes = new List<int> {8, 0, 3, 4}, Name = "Super Team", Id = "2"}
-        //    };
-        //}
+        private static List<Team> PrepareTestData()
+        {
+            return new List<Team>
+            {
+                new Team {Mazes = new List<Maze> {new Maze {Score = 22},new Maze {Score = 33} }, Name = "Cool Team", Id = "1"},
+                new Team {Mazes = new List<Maze> {new Maze {Score = 45},new Maze {Score = 84} }, Name = "Super Team", Id = "2"}
+            };
+        }
 
         //private static void CalculateEdgeScores(List<Team> model, int numberOfChalenges, out List<Maze> bestScores, out List<Maze> worstScores)
         //{

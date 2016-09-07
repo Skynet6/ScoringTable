@@ -76,4 +76,6 @@ h1{
 .solved {
     border-style: solid !important; 
     border-color: #00ff00 !important;
+    border-spacing: 5px !important;
+    border-width: 3px !important;
 }

@@ -45,7 +45,8 @@
 
   "buildOptions": {
     "emitEntryPoint": true,
-    "preserveCompilationContext": true
+    "preserveCompilationContext": true,
+    "optimize": true
   },
 
   "runtimeOptions": {
@@ -59,6 +60,10 @@
       "appsettings.json",
       "web.config"
     ]
+  },
+
+  "commands": {
+    "web": "Microsoft.AspNet.Server.Kestrel"
   },
 
   "scripts": {

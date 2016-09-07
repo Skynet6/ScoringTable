@@ -15,8 +15,8 @@ namespace ScoringTable.Models
 {
     public class ScoringService
     {
-        private readonly string mazeGameApiUrl = "http://localhost:12345/";
-        private readonly string dbApiUrl = "http://10.1.90.103:8080/";
+        private readonly string mazeGameApiUrl = "http://192.168.0.50:12345/";
+        private readonly string dbApiUrl = "http://192.168.0.50:8080/";
 
         public List<Team> GetAllTeams()
         {
@@ -37,7 +37,7 @@ namespace ScoringTable.Models
                 {
                     var tempMaze = new Maze {Id = maze.mazeId, Score = maze.score};
 
-                    if(maze.score <= minScore)
+                    if(maze.score <= minScore && maze.score != 0)
                     {
                         minScore = maze.score;
                         tempMaze.BestTeam = true;
@@ -51,7 +51,7 @@ namespace ScoringTable.Models
                             }
                         });
                     }
-                    else if (maze.score >= maxScore)
+                    else if (maze.score >= maxScore && maze.score != 0)
                     {
                         maxScore = maze.score;
                         tempMaze.WorstTeam = true;
@@ -83,7 +83,7 @@ namespace ScoringTable.Models
                 }
             }
 
-            return teams.OrderByDescending(t => t.Sum).ToList();
+            return teams.OrderBy(t => t.Sum).ToList();
         }
 
         public List<SolvedMaze> GetSolvedMazes()
@@ -99,6 +99,52 @@ namespace ScoringTable.Models
         {
             var result = getDataFromRestAPI(mazeGameApiUrl, $"maze-game/points/teamMazes/{id}").Result;
             var scores = JsonConvert.DeserializeObject<Scores>(result);
+            //r1_1 r1_2
+            if (!scores.mazes.Exists(m => m.mazeId == "r1_1"))
+            {
+                var maze = new DAL.Maze {mazeId = "r1_1"};
+                if (id == "1df0455f")
+                {
+                    maze.score = 16143;
+                }
+                if (id == "qe78gh03")
+                {
+                    maze.score = 134;
+                }
+                if (id == "bvc234a6")
+                {
+                    maze.score = 140;
+                }
+                if (id == "kgruh240")
+                {
+                    maze.score = 50;
+                }
+                if (id == "06hdbll3")
+                {
+                    maze.score = 0;
+                }
+                if (id == "nek436jr")
+                {
+                    maze.score = 0;
+                }
+
+                scores.mazes.Insert(0, maze);
+            }
+
+            if (!scores.mazes.Exists(m => m.mazeId == "round2"))
+            {
+                var maze = new DAL.Maze {mazeId = "round2", score = 0};
+                scores.mazes.Insert(2, maze);
+            }
+            else
+            {
+                scores.mazes.Reverse(2, 2);
+            }
+
+            if (scores.mazes.Exists(m => m.mazeId == "r1_2") && id == "qe78gh03")
+            {
+                scores.mazes.FirstOrDefault(m => m.mazeId == "r1_2").score-= 5554;
+            }
 
             return scores.mazes;
         }
