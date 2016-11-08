@@ -15,16 +15,56 @@ namespace ScoringTable.Models
 {
     public class ScoringService
     {
-        private readonly string mazeGameApiUrl = "http://192.168.0.50:12345/";
-        private readonly string dbApiUrl = "http://192.168.0.50:8080/";
+        public string MazeGameApiUrl { get;}
+        public string DbApiUrl { get;}
+
+        public ScoringService(){}
+
+        public ScoringService(string mazeGameApiUrl, string dbApiUrl)
+        {
+            MazeGameApiUrl = mazeGameApiUrl;
+            DbApiUrl = dbApiUrl;
+        }
 
         public List<Team> GetAllTeams()
         {
             var teams = new List<Team>();
-            var result = getDataFromRestAPI(dbApiUrl, "restapi/teams").Result;
+
+            if (string.IsNullOrEmpty(DbApiUrl))
+                return PrepareTestData();
+
+            var result = getDataFromRestAPI(DbApiUrl, "restapi/teams").Result;
 
             var dalTeams = JsonConvert.DeserializeObject<DALTeams>(result);
 
+            GetScoresForTeams(dalTeams, teams);
+
+            var solvedMazes = GetSolvedMazes();
+            foreach (var solvedMaze in solvedMazes)
+            {
+                var team = teams.Single(t => t.Id == solvedMaze.teamId);
+                if (team.Mazes.Any())
+                {
+                    var maze = team.Mazes.FirstOrDefault(m => m.Id == solvedMaze.mazeId);
+                    if (maze != null)
+                        maze.Solved = true;
+                }
+            }
+
+            return teams.OrderBy(t => t.Sum).ToList();
+        }
+
+        private static List<Team> PrepareTestData()
+        {
+            return new List<Team>
+            {
+                new Team {Mazes = new List<Maze> {new Maze {Score = 22, BestTeam = true},new Maze {Score = 33, WorstTeam = true, Solved = true} }, Name = "Cool Team", Id = "1"},
+                new Team {Mazes = new List<Maze> {new Maze {Score = 45, WorstTeam = true, Solved = true},new Maze {Score = 84, BestTeam = true} }, Name = "Super Team", Id = "2"}
+            };
+        }
+
+        private void GetScoresForTeams(DALTeams dalTeams, List<Team> teams)
+        {
             var maxScore = int.MinValue;
             var minScore = int.MaxValue;
 
@@ -37,7 +77,7 @@ namespace ScoringTable.Models
                 {
                     var tempMaze = new Maze {Id = maze.mazeId, Score = maze.score};
 
-                    if(maze.score <= minScore && maze.score != 0)
+                    if (maze.score <= minScore && maze.score != 0)
                     {
                         minScore = maze.score;
                         tempMaze.BestTeam = true;
@@ -46,7 +86,7 @@ namespace ScoringTable.Models
                             if (t.Mazes.Any())
                             {
                                 var innerMaze = t.Mazes.FirstOrDefault(m => m.Id == maze.mazeId);
-                                if(innerMaze != null && innerMaze.Score != maze.score)
+                                if (innerMaze != null && innerMaze.Score != maze.score)
                                     innerMaze.BestTeam = false;
                             }
                         });
@@ -70,25 +110,11 @@ namespace ScoringTable.Models
                 }
                 teams.Add(team);
             }
-
-            var solvedMazes = GetSolvedMazes();
-            foreach (var solvedMaze in solvedMazes)
-            {
-                var team = teams.Single(t => t.Id == solvedMaze.teamId);
-                if (team.Mazes.Any())
-                {
-                    var maze = team.Mazes.FirstOrDefault(m => m.Id == solvedMaze.mazeId);
-                    if (maze != null)
-                        maze.Solved = true;
-                }
-            }
-
-            return teams.OrderBy(t => t.Sum).ToList();
         }
 
         public List<SolvedMaze> GetSolvedMazes()
         {
-            var result = getDataFromRestAPI(dbApiUrl, "restapi/solvedMazes").Result;
+            var result = getDataFromRestAPI(DbApiUrl, "restapi/solvedMazes").Result;
 
             var dalSolvedMazes = JsonConvert.DeserializeObject<SolvedMazes>(result);
 
@@ -97,61 +123,18 @@ namespace ScoringTable.Models
 
         public List<DAL.Maze> GetTeam(string id)
         {
-            var result = getDataFromRestAPI(mazeGameApiUrl, $"maze-game/points/teamMazes/{id}").Result;
+            var result = getDataFromRestAPI(MazeGameApiUrl, $"maze-game/points/teamMazes/{id}").Result;
             var scores = JsonConvert.DeserializeObject<Scores>(result);
-            //r1_1 r1_2
-            if (!scores.mazes.Exists(m => m.mazeId == "r1_1"))
-            {
-                var maze = new DAL.Maze {mazeId = "r1_1"};
-                if (id == "1df0455f")
-                {
-                    maze.score = 16143;
-                }
-                if (id == "qe78gh03")
-                {
-                    maze.score = 134;
-                }
-                if (id == "bvc234a6")
-                {
-                    maze.score = 140;
-                }
-                if (id == "kgruh240")
-                {
-                    maze.score = 50;
-                }
-                if (id == "06hdbll3")
-                {
-                    maze.score = 0;
-                }
-                if (id == "nek436jr")
-                {
-                    maze.score = 0;
-                }
-
-                scores.mazes.Insert(0, maze);
-            }
-
-            if (!scores.mazes.Exists(m => m.mazeId == "round2"))
-            {
-                var maze = new DAL.Maze {mazeId = "round2", score = 0};
-                scores.mazes.Insert(2, maze);
-            }
-            else
-            {
-                scores.mazes.Reverse(2, 2);
-            }
-
-            if (scores.mazes.Exists(m => m.mazeId == "r1_2") && id == "qe78gh03")
-            {
-                scores.mazes.FirstOrDefault(m => m.mazeId == "r1_2").score-= 5554;
-            }
 
             return scores.mazes;
         }
 
         public int GetTimeLeft(string timerId)
         {
-            var result = getDataFromRestAPI(mazeGameApiUrl, $"maze-game/timer/getRemainingTime/{timerId}").Result;
+            if (string.IsNullOrEmpty(timerId))
+                return 100; // return test data
+
+            var result = getDataFromRestAPI(MazeGameApiUrl, $"maze-game/timer/getRemainingTime/{timerId}").Result;
             var timer = JsonConvert.DeserializeObject<Timer>(result);
             return timer?.remainingTime ?? 1;
         }
@@ -163,6 +146,7 @@ namespace ScoringTable.Models
                 client.BaseAddress = new Uri(baseAddress);
                 client.DefaultRequestHeaders.Accept.Clear();
                 client.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+                client.Timeout =TimeSpan.FromSeconds(10);
 
                 HttpResponseMessage response = await client.GetAsync(path);
                 if (response.IsSuccessStatusCode)

@@ -9,60 +9,21 @@ namespace ScoringTable.Controllers
 {
     public class HomeController : Controller
     {
+        private readonly string defaultMazeGameApiUrl = "http://192.168.0.50:12345/";
+        private readonly string defaultDbApiUrl = "http://192.168.0.50:8080/";
+
         public IActionResult Index()
         {
+            //var scoringService = new ScoringService(defaultMazeGameApiUrl, defaultDbApiUrl);
             var scoringService = new ScoringService();
-            //var model = scoringService.GetAllTeams();
-            var model = PrepareTestData();
+            var model = scoringService.GetAllTeams();
 
             //var timeLeft = scoringService.GetTimeLeft("timer_1");
-            var timeLeft = 100;
-            //List<Maze> bestScores, worstScores;
+            var timeLeft = scoringService.GetTimeLeft("");
 
-            //CalculateEdgeScores(model, numberOfChalenges, out bestScores, out worstScores);
-
-            //ViewData["BestScores"] = bestScores.Select(b => b.Id).ToList();
-            //ViewData["WorstScores"] = worstScores.Select(b => b.Id).ToList();
             ViewData["TimeLeft"] = timeLeft;
             return View(model);
         }
-
-        private static List<Team> PrepareTestData()
-        {
-            return new List<Team>
-            {
-                new Team {Mazes = new List<Maze> {new Maze {Score = 22},new Maze {Score = 33} }, Name = "Cool Team", Id = "1"},
-                new Team {Mazes = new List<Maze> {new Maze {Score = 45},new Maze {Score = 84} }, Name = "Super Team", Id = "2"}
-            };
-        }
-
-        //private static void CalculateEdgeScores(List<Team> model, int numberOfChalenges, out List<Maze> bestScores, out List<Maze> worstScores)
-        //{
-        //    bestScores = new List<Maze>();
-        //    worstScores = new List<Maze>();
-        //    for (int i = 0; i < numberOfChalenges; i++)
-        //    {
-        //        bestScores.Add(new Maze { Id = i.ToString(), BestTeam = 0, Score = int.MaxValue });
-        //        worstScores.Add(new Maze { Id = i.ToString(), BestTeam = 0, Score = int.MinValue });
-
-        //        for (int j = 0; j < model.Count; j++)
-        //        {
-        //            if (model[j].Mazes[i] < bestScores[i].Score)
-        //            {
-        //                bestScores[i].Id = model[j].Id;
-        //                bestScores[i].BestTeam = j;
-        //                bestScores[i].Score = model[j].Mazes[i];
-        //            }
-        //            else if (model[j].Mazes[i] > worstScores[i].Score)
-        //            {
-        //                worstScores[i].Id = model[j].Id;
-        //                worstScores[i].BestTeam = j;
-        //                worstScores[i].Score = model[j].Mazes[i];
-        //            }
-
-        //        }
-        //    }
-        //}
 
         public IActionResult Error()
         {
