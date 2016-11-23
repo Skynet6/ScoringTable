@@ -42,8 +42,8 @@ namespace ScoringTable.Models
             var solvedMazes = GetSolvedMazes();
             foreach (var solvedMaze in solvedMazes)
             {
-                var team = teams.Single(t => t.Id == solvedMaze.teamId);
-                if (team.Mazes.Any())
+                var team = teams.SingleOrDefault(t => t.Id == solvedMaze.teamId);
+                if (team != null && team.Mazes.Any())
                 {
                     var maze = team.Mazes.FirstOrDefault(m => m.Id == solvedMaze.mazeId);
                     if (maze != null)
